@@ -390,28 +390,9 @@
 
         // 显示随机结果（本地存储结果，刷新不消失）
         function showResult() {
-            const savedResult = localStorage.getItem('catResult');
-            let result;
-            let randomIndex;
-
-            if (savedResult) {
-                // 读取本地存储的结果
-                const index = parseInt(savedResult);
-                // 检查索引是否在有效范围内
-                if (index >= 0 && index < catResults.length) {
-                    result = catResults[index];
-                } else {
-                    // 索引无效，重新生成
-                    randomIndex = Math.floor(Math.random() * catResults.length);
-                    localStorage.setItem('catResult', randomIndex);
-                    result = catResults[randomIndex];
-                }
-            } else {
-                // 随机生成结果并存储
-                randomIndex = Math.floor(Math.random() * catResults.length);
-                localStorage.setItem('catResult', randomIndex);
-                result = catResults[randomIndex];
-            }
+            // 每次都完全随机生成结果
+            const randomIndex = Math.floor(Math.random() * catResults.length);
+            const result = catResults[randomIndex];
 
             // 更新结果显示
             resultTitle.textContent = result.title;
@@ -422,7 +403,6 @@
 
         // 重新测试
         restartBtn.addEventListener('click', () => {
-            localStorage.removeItem('catResult');
             resultArea.style.display = 'none';
             progressFill.style.width = '0%'; // 重置进度条
             // 显示长按区域和文本
