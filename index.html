@@ -370,13 +370,23 @@
         function showResult() {
             const savedResult = localStorage.getItem('catResult');
             let result;
+            let randomIndex;
 
             if (savedResult) {
                 // 读取本地存储的结果
-                result = catResults[parseInt(savedResult)];
+                const index = parseInt(savedResult);
+                // 检查索引是否在有效范围内
+                if (index >= 0 && index < catResults.length) {
+                    result = catResults[index];
+                } else {
+                    // 索引无效，重新生成
+                    randomIndex = Math.floor(Math.random() * catResults.length);
+                    localStorage.setItem('catResult', randomIndex);
+                    result = catResults[randomIndex];
+                }
             } else {
                 // 随机生成结果并存储
-                const randomIndex = Math.floor(Math.random() * catResults.length);
+                randomIndex = Math.floor(Math.random() * catResults.length);
                 localStorage.setItem('catResult', randomIndex);
                 result = catResults[randomIndex];
             }
