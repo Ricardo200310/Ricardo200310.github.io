@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐱 猫咪性格测试 | 长按测测你的隐藏猫格</title>
+    <style>
+        /* 基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', '微软雅黑', sans-serif;
+        }
+        body {
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        /* 浅色模式 */
+        body.light {
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        /* 深色模式 */
+        body.dark {
+            background-color: #1a1a2e;
+            color: #eee;
+        }
+        .container {
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: box-shadow 0.3s;
+        }
+        body.dark .container {
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            background-color: #24243e;
+        }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #6c5ce7;
+        }
+        .subtitle {
+            font-size: 1rem;
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+        /* 长按区域容器（包含图标+进度条） */
+        .hold-container {
+            width: 240px;
+            margin: 0 auto 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        /* 长按区域 */
+        .hold-area {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+            user-select: none;
+            position: relative;
+        }
+        body.dark .hold-area {
+            background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+            box-shadow: 0 5px 15px rgba(162, 155, 254, 0.6);
+        }
+        .hold-area:hover {
+            transform: scale(1.05);
+        }
+        .hold-area.active {
+            transform: scale(0.95);
+            box-shadow: 0 3px 10px rgba(108, 92, 231, 0.6);
+        }
+        .hold-icon {
+            font-size: 4rem;
+        }
+        /* 进度条样式 */
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-top: 15px;
+            overflow: hidden;
+            transition: background-color 0.3s;
+        }
+        body.dark .progress-bar {
+            background-color: #333;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #6c5ce7, #8176f9);
+            border-radius: 5px;
+            transition: width 0.05s linear; /* 平滑进度 */
+        }
+        body.dark .progress-fill {
+            background: linear-gradient(90deg, #8176f9, #6c5ce7);
+        }
+        .hold-text {
+            font-size: 1.1rem;
+            margin-top: 5px;
+        }
+        /* 结果区域 */
+        .result-area {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 15px;
+            background-color: rgba(108, 92, 231, 0.1);
+            display: none;
+        }
+        body.dark .result-area {
+            background-color: rgba(162, 155, 254, 0.1);
+        }
+        .result-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #6c5ce7;
+        }
+        .result-desc {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .restart-btn {
+            padding: 10px 30px;
+            border: none;
+            border-radius: 30px;
+            background-color: #6c5ce7;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .restart-btn:hover {
+            background-color: #5a4bda;
+        }
+        /* 深色模式切换按钮 */
+        .darkmode-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background-color: #6c5ce7;
+            color: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+        .darkmode-toggle:hover {
+            background-color: #5a4bda;
+        }
+        /* 加载动画 */
+        .loader {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 4px solid white;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="light">
+    <button class="darkmode-toggle" id="darkmodeToggle">切换深色模式</button>
+    <div class="container">
+        <h1>🐱 猫咪性格测试</h1>
+        <p class="subtitle">长按下方猫咪图标，测测你的隐藏猫格～</p>
+
+        <!-- 长按区域（包含进度条） -->
+        <div class="hold-container">
+            <div class="hold-area" id="holdArea">
+                <div class="hold-icon">😺</div>
+            </div>
+            <!-- 进度条 -->
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+        <p class="hold-text">长按 3 秒开始测试</p>
+
+        <!-- 加载动画 -->
+        <div class="loader" id="loader"></div>
+
+        <!-- 结果区域 -->
+        <div class="result-area" id="resultArea">
+            <h2 class="result-title" id="resultTitle">橘猫系性格</h2>
+            <p class="result-desc" id="resultDesc">
+                你像一只慵懒又粘人的橘猫～ 性格开朗，随遇而安，对生活充满热爱，喜欢享受美食和舒适的环境。
+                待人真诚热情，朋友都觉得你是“治愈系”存在，但偶尔也会有小傲娇，需要被人哄着～
+            </p>
+            <button class="restart-btn" id="restartBtn">重新测试</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM 元素
+        const holdArea = document.getElementById('holdArea');
+        const loader = document.getElementById('loader');
+        const resultArea = document.getElementById('resultArea');
+        const resultTitle = document.getElementById('resultTitle');
+        const resultDesc = document.getElementById('resultDesc');
+        const restartBtn = document.getElementById('restartBtn');
+        const darkmodeToggle = document.getElementById('darkmodeToggle');
+        const progressFill = document.getElementById('progressFill');
+        const body = document.body;
+
+        // 测试结果数据
+        const catResults = [
+            {
+                title: "橘猫系性格",
+                desc: "你像一只慵懒又粘人的橘猫～ 性格开朗，随遇而安，对生活充满热爱，喜欢享受美食和舒适的环境。待人真诚热情，朋友都觉得你是“治愈系”存在，但偶尔也会有小傲娇，需要被人哄着～"
+            },
+            {
+                title: "布偶猫系性格",
+                desc: "你是温柔优雅的布偶猫～ 脾气超好，待人友善，几乎不会发脾气，是大家眼中的“好好先生/小姐”。心思细腻，善于倾听，总是能恰到好处地安慰他人，但内心敏感，需要被人温柔对待～"
+            },
+            {
+                title: "英短猫系性格",
+                desc: "你是沉稳内敛的英短猫～ 性格独立，不粘人但重感情，有自己的小世界。做事踏实靠谱，遇到问题冷静理智，不会轻易慌乱。对信任的人会展现温柔的一面，但对外人保持适当距离，自带“高冷”气质～"
+            },
+            {
+                title: "缅因猫系性格",
+                desc: "你是霸气又温柔的缅因猫～ 外表看起来不好接近，实则内心柔软，非常护短。有强烈的责任感，喜欢照顾身边的人，是朋友眼中的“可靠后盾”。性格直爽，不喜欢拐弯抹角，做事果断有力～"
+            },
+            {
+                title: "狸花猫系性格",
+                desc: "你是活泼好动的狸花猫～ 精力充沛，好奇心强，对新鲜事物充满探索欲。聪明机灵，适应能力强，遇到困难能快速找到解决办法。性格直率，爱憎分明，喜欢的人会掏心掏肺，不喜欢的人则会直接远离～"
+            },
+            {
+                title: "暹罗猫系性格",
+                desc: "你是优雅又社交的暹罗猫～ 喜欢与人互动，善于表达自己，社交能力强。对生活有较高的追求，喜欢美好的事物和环境。性格外向，喜欢成为关注的焦点，但也有敏感的一面，需要被理解和支持～"
+            },
+            {
+                title:"coke猫",
+                desc: "我了个骚刚，小猫老弟！"
+            }
+        ];
+
+        // 长按相关变量
+        let holdTimer = null;
+        let progressTimer = null; // 进度条计时器
+        let isHolding = false;
+        let currentProgress = 0; // 当前进度百分比
+        const requiredHoldTime = 3000; // 3秒
+        const progressStep = 100 / (requiredHoldTime / 50); // 每50ms前进的百分比
+
+        // 深色模式切换（根据URL参数或本地存储）
+        const urlParams = new URLSearchParams(window.location.search);
+        const darkmodeFromUrl = urlParams.get('darkmode');
+        const darkmodeFromStorage = localStorage.getItem('darkmode');
+
+        // 初始化深色模式
+        if (darkmodeFromUrl === '1' || darkmodeFromStorage === '1') {
+            body.classList.replace('light', 'dark');
+            darkmodeToggle.textContent = '切换浅色模式';
+        }
+
+        darkmodeToggle.addEventListener('click', () => {
+            const isDark = body.classList.contains('dark');
+            if (isDark) {
+                body.classList.replace('dark', 'light');
+                darkmodeToggle.textContent = '切换深色模式';
+                localStorage.setItem('darkmode', '0');
+                window.history.replaceState(null, null, '?darkmode=0');
+            } else {
+                body.classList.replace('light', 'dark');
+                darkmodeToggle.textContent = '切换浅色模式';
+                localStorage.setItem('darkmode', '1');
+                window.history.replaceState(null, null, '?darkmode=1');
+            }
+        });
+
+        // 长按事件监听
+        holdArea.addEventListener('mousedown', startHold);
+        holdArea.addEventListener('touchstart', startHold, { passive: true });
+
+        // 结束长按（鼠标抬起/离开/触摸结束）
+        holdArea.addEventListener('mouseup', endHold);
+        holdArea.addEventListener('mouseleave', endHold);
+        holdArea.addEventListener('touchend', endHold);
+
+        // 开始长按
+        function startHold() {
+            if (isHolding) return;
+            isHolding = true;
+            currentProgress = 0;
+            progressFill.style.width = '0%';
+            holdArea.classList.add('active');
+            loader.style.display = 'none';
+            resultArea.style.display = 'none';
+
+            // 启动进度条计时器（每50ms更新一次进度）
+            progressTimer = setInterval(() => {
+                currentProgress += progressStep;
+                if (currentProgress >= 100) currentProgress = 100;
+                progressFill.style.width = `${currentProgress}%`;
+            }, 50);
+
+            // 启动长按计时器
+            holdTimer = setTimeout(() => {
+                completeHold();
+            }, requiredHoldTime);
+        }
+
+        // 结束长按（未达到时间）
+        function endHold() {
+            if (!isHolding) return;
+            isHolding = false;
+            holdArea.classList.remove('active');
+            clearTimeout(holdTimer);
+            clearInterval(progressTimer); // 停止进度条
+            // 重置进度条
+            currentProgress = 0;
+            progressFill.style.width = '0%';
+        }
+
+        // 完成长按（达到3秒）
+        function completeHold() {
+            isHolding = false;
+            holdArea.classList.remove('active');
+            clearInterval(progressTimer); // 停止进度条
+            progressFill.style.width = '100%'; // 进度条填满
+
+            // 显示加载动画
+            loader.style.display = 'block';
+
+            // 模拟加载延迟（增强体验）
+            setTimeout(() => {
+                loader.style.display = 'none';
+                progressFill.style.width = '0%'; // 重置进度条
+                showResult();
+            }, 1500);
+        }
+
+        // 显示随机结果（本地存储结果，刷新不消失）
+        function showResult() {
+            const savedResult = localStorage.getItem('catResult');
+            let result;
+
+            if (savedResult) {
+                // 读取本地存储的结果
+                result = catResults[parseInt(savedResult)];
+            } else {
+                // 随机生成结果并存储
+                const randomIndex = Math.floor(Math.random() * catResults.length);
+                localStorage.setItem('catResult', randomIndex);
+                result = catResults[randomIndex];
+            }
+
+            // 更新结果显示
+            resultTitle.textContent = result.title;
+            resultDesc.textContent = result.desc;
+            resultArea.style.display = 'block';
+        }
+
+        // 重新测试
+        restartBtn.addEventListener('click', () => {
+            localStorage.removeItem('catResult');
+            resultArea.style.display = 'none';
+            progressFill.style.width = '0%'; // 重置进度条
+        });
+    </script>
+</body>
+</html>
