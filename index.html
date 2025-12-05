@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐱 猫咪性格测试 | 长按测测你的隐藏猫格</title>
+    <title>二次元传送门|测测你是二次元里的谁</title>
     <style>
         /* 基础样式 */
         * {
@@ -198,13 +198,13 @@
 <body class="light">
     <button class="darkmode-toggle" id="darkmodeToggle">切换深色模式</button>
     <div class="container">
-        <h1>🐱 猫咪性格测试</h1>
-        <p class="subtitle">长按下方猫咪图标，测测你的隐藏猫格～</p>
+        <h1>异世界传送门</h1>
+        <p class="subtitle">长按下方按钮，传送你去异世界～</p>
 
         <!-- 长按区域（包含进度条） -->
         <div class="hold-container">
             <div class="hold-area" id="holdArea">
-                <div class="hold-icon">😺</div>
+                <div class="hold-icon"><img src="./dora.ico" alt="传送门" style="width: 100px; height: 100px;"></div>
             </div>
             <!-- 进度条 -->
             <div class="progress-bar" id="progressBar">
@@ -218,12 +218,9 @@
 
         <!-- 结果区域 -->
         <div class="result-area" id="resultArea">
-            <h2 class="result-title" id="resultTitle">橘猫系性格</h2>
-            <img class="result-image" id="resultImage" src="" alt="猫咪性格" />
-            <p class="result-desc" id="resultDesc">
-                你像一只慵懒又粘人的橘猫～ 性格开朗，随遇而安，对生活充满热爱，喜欢享受美食和舒适的环境。
-                待人真诚热情，朋友都觉得你是“治愈系”存在，但偶尔也会有小傲娇，需要被人哄着～
-            </p>
+            <h2 class="result-title" id="resultTitle"></h2>
+            <img class="result-image" id="resultImage" alt="猫咪性格" />
+            <p class="result-desc" id="resultDesc"></p>
             <button class="restart-btn" id="restartBtn">重新测试</button>
         </div>
     </div>
@@ -248,22 +245,47 @@
             {
                 title:"耄耋",
                 desc:"莫挨老子，我要哈气了",
-                image:"https://tse3.mm.bing.net/th/id/OIP.KmPMRQP7VSadCn9vXgNR9gAAAA?cb=ucfimg2&ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3"
+                image:"./耄耋.png"
             },
             {
                 title:"coke猫",
                 desc: "我了个骚刚，小猫老弟！",
-                image: "https://tse3.mm.bing.net/th/id/OIP.Ci7RIvo9Ymu5_2lEaEqQ9AHaH1?cb=ucfimg2&ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3"
+                image: "./coke.png"
             },
             {
                 title:"三角洲猫猫",
                 desc:"绝密大坝猛攻！",
-                image:"https://tse3.mm.bing.net/th/id/OIP.VogRIj0VicgO5JslE_rKYgAAAA?cb=ucfimg2&ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3"
+                image:"./三角洲鼠鼠.png"
             },
             {
                 title:"开开",
                 desc:"将大局逆转吧！开！",
-                image:"https://c-ssl.dtstatic.com/uploads/blog/202503/01/4ESAymqouoNBvy2.thumb.400_0.gif"
+                image:"./cat.gif"
+            },
+            {
+                title:"要饭猫猫",
+                desc:"行行好给点吃的吧。",
+                image:"./要饭猫猫.gif"
+            },
+            {
+                title:"苦命鸳鸯",
+                desc:"你和董卓真是一对苦命鸳鸯",
+                image:"./苦命鸳鸯董卓.png"
+            },
+            {
+                title:"雷电将军的老公",
+                desc:"你小子命真好，能娶到雷电将军",
+                image:"./雷电将军.png"
+            },
+            {
+                title:"阿伟",
+                desc:"兄弟你的屁眼还好吗？",
+                image:"./阿伟.png"
+            },
+            {
+                title:"杰哥",
+                desc:"那个阿伟很润啊。",
+                image:"./杰哥.png"
             }
         ];
 
@@ -409,5 +431,4 @@
         });
     </script>
 </body>
-
 </html>
