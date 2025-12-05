@@ -134,6 +134,15 @@
             margin-bottom: 15px;
             color: #6c5ce7;
         }
+        .result-image {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 20px;
+            display: block;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
         .result-desc {
             font-size: 1rem;
             line-height: 1.6;
@@ -202,7 +211,7 @@
                 <div class="progress-fill" id="progressFill"></div>
             </div>
         </div>
-        <p class="hold-text">长按 3 秒开始测试</p>
+        <p class="hold-text">长按 2 秒开始测试</p>
 
         <!-- 加载动画 -->
         <div class="loader" id="loader"></div>
@@ -210,6 +219,7 @@
         <!-- 结果区域 -->
         <div class="result-area" id="resultArea">
             <h2 class="result-title" id="resultTitle">橘猫系性格</h2>
+            <img class="result-image" id="resultImage" src="" alt="猫咪性格" />
             <p class="result-desc" id="resultDesc">
                 你像一只慵懒又粘人的橘猫～ 性格开朗，随遇而安，对生活充满热爱，喜欢享受美食和舒适的环境。
                 待人真诚热情，朋友都觉得你是“治愈系”存在，但偶尔也会有小傲娇，需要被人哄着～
@@ -221,9 +231,12 @@
     <script>
         // DOM 元素
         const holdArea = document.getElementById('holdArea');
+        const holdContainer = document.querySelector('.hold-container');
+        const holdText = document.querySelector('.hold-text');
         const loader = document.getElementById('loader');
         const resultArea = document.getElementById('resultArea');
         const resultTitle = document.getElementById('resultTitle');
+        const resultImage = document.getElementById('resultImage');
         const resultDesc = document.getElementById('resultDesc');
         const restartBtn = document.getElementById('restartBtn');
         const darkmodeToggle = document.getElementById('darkmodeToggle');
@@ -234,31 +247,38 @@
         const catResults = [
             {
                 title: "橘猫系性格",
-                desc: "你像一只慵懒又粘人的橘猫～ 性格开朗，随遇而安，对生活充满热爱，喜欢享受美食和舒适的环境。待人真诚热情，朋友都觉得你是“治愈系”存在，但偶尔也会有小傲娇，需要被人哄着～"
+                desc: "你像一只慵懒又粘人的橘猫～ 性格开朗，随遇而安，对生活充满热爱，喜欢享受美食和舒适的环境。待人真诚热情，朋友都觉得你是“治愈系”存在，但偶尔也会有小傲娇，需要被人哄着～",
+                image: "https://images.unsplash.com/photo-1548767192-418d863b68b3?w=200&h=200&fit=crop&crop=face"
             },
             {
                 title: "布偶猫系性格",
-                desc: "你是温柔优雅的布偶猫～ 脾气超好，待人友善，几乎不会发脾气，是大家眼中的“好好先生/小姐”。心思细腻，善于倾听，总是能恰到好处地安慰他人，但内心敏感，需要被人温柔对待～"
+                desc: "你是温柔优雅的布偶猫～ 脾气超好，待人友善，几乎不会发脾气，是大家眼中的“好好先生/小姐”。心思细腻，善于倾听，总是能恰到好处地安慰他人，但内心敏感，需要被人温柔对待～",
+                image: "https://images.unsplash.com/photo-1611914588501-03d4e5301d65?w=200&h=200&fit=crop&crop=face"
             },
             {
                 title: "英短猫系性格",
-                desc: "你是沉稳内敛的英短猫～ 性格独立，不粘人但重感情，有自己的小世界。做事踏实靠谱，遇到问题冷静理智，不会轻易慌乱。对信任的人会展现温柔的一面，但对外人保持适当距离，自带“高冷”气质～"
+                desc: "你是沉稳内敛的英短猫～ 性格独立，不粘人但重感情，有自己的小世界。做事踏实靠谱，遇到问题冷静理智，不会轻易慌乱。对信任的人会展现温柔的一面，但对外人保持适当距离，自带“高冷”气质～",
+                image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=200&h=200&fit=crop&crop=face"
             },
             {
                 title: "缅因猫系性格",
-                desc: "你是霸气又温柔的缅因猫～ 外表看起来不好接近，实则内心柔软，非常护短。有强烈的责任感，喜欢照顾身边的人，是朋友眼中的“可靠后盾”。性格直爽，不喜欢拐弯抹角，做事果断有力～"
+                desc: "你是霸气又温柔的缅因猫～ 外表看起来不好接近，实则内心柔软，非常护短。有强烈的责任感，喜欢照顾身边的人，是朋友眼中的“可靠后盾”。性格直爽，不喜欢拐弯抹角，做事果断有力～",
+                image: "https://images.unsplash.com/photo-1596854407944-bf87f6fdd49e?w=200&h=200&fit=crop&crop=face"
             },
             {
                 title: "狸花猫系性格",
-                desc: "你是活泼好动的狸花猫～ 精力充沛，好奇心强，对新鲜事物充满探索欲。聪明机灵，适应能力强，遇到困难能快速找到解决办法。性格直率，爱憎分明，喜欢的人会掏心掏肺，不喜欢的人则会直接远离～"
+                desc: "你是活泼好动的狸花猫～ 精力充沛，好奇心强，对新鲜事物充满探索欲。聪明机灵，适应能力强，遇到困难能快速找到解决办法。性格直率，爱憎分明，喜欢的人会掏心掏肺，不喜欢的人则会直接远离～",
+                image: "https://images.unsplash.com/photo-1530281700549-e82e7bf110d6?w=200&h=200&fit=crop&crop=face"
             },
             {
                 title: "暹罗猫系性格",
-                desc: "你是优雅又社交的暹罗猫～ 喜欢与人互动，善于表达自己，社交能力强。对生活有较高的追求，喜欢美好的事物和环境。性格外向，喜欢成为关注的焦点，但也有敏感的一面，需要被理解和支持～"
+                desc: "你是优雅又社交的暹罗猫～ 喜欢与人互动，善于表达自己，社交能力强。对生活有较高的追求，喜欢美好的事物和环境。性格外向，喜欢成为关注的焦点，但也有敏感的一面，需要被理解和支持～",
+                image: "https://images.unsplash.com/photo-1600891964092-4316c288032e?w=200&h=200&fit=crop&crop=face"
             },
             {
                 title:"coke猫",
-                desc: "我了个骚刚，小猫老弟！"
+                desc: "我了个骚刚，小猫老弟！",
+                image: "https://tse3.mm.bing.net/th/id/OIP.Ci7RIvo9Ymu5_2lEaEqQ9AHaH1?cb=ucfimg2&ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3"
             }
         ];
 
@@ -267,7 +287,7 @@
         let progressTimer = null; // 进度条计时器
         let isHolding = false;
         let currentProgress = 0; // 当前进度百分比
-        const requiredHoldTime = 3000; // 3秒
+        const requiredHoldTime = 2000; // 2秒
         const progressStep = 100 / (requiredHoldTime / 50); // 每50ms前进的百分比
 
         // 深色模式切换（根据URL参数或本地存储）
@@ -340,7 +360,7 @@
             progressFill.style.width = '0%';
         }
 
-        // 完成长按（达到3秒）
+        // 完成长按（达到2秒）
         function completeHold() {
             isHolding = false;
             holdArea.classList.remove('active');
@@ -354,6 +374,9 @@
             setTimeout(() => {
                 loader.style.display = 'none';
                 progressFill.style.width = '0%'; // 重置进度条
+                // 隐藏长按区域和文本
+                holdContainer.style.display = 'none';
+                holdText.style.display = 'none';
                 showResult();
             }, 1500);
         }
@@ -375,6 +398,7 @@
 
             // 更新结果显示
             resultTitle.textContent = result.title;
+            resultImage.src = result.image;
             resultDesc.textContent = result.desc;
             resultArea.style.display = 'block';
         }
@@ -384,6 +408,9 @@
             localStorage.removeItem('catResult');
             resultArea.style.display = 'none';
             progressFill.style.width = '0%'; // 重置进度条
+            // 显示长按区域和文本
+            holdContainer.style.display = 'flex';
+            holdText.style.display = 'block';
         });
     </script>
 </body>
