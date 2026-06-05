@@ -146,7 +146,7 @@ section:not(#hero) {
 .stat span:last-child { color: var(--text2); font-size: 0.85rem; }
 
 /* SKILLS */
-.skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; align-items: stretch; }
+.skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; align-items: stretch; }
 .skill-card {
   background: var(--bg2); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 1.5rem;
@@ -164,7 +164,7 @@ section:not(#hero) {
 .skill-card p { color: var(--text2); font-size: 0.83rem; line-height: 1.7; flex: 1; }
 
 /* PROJECTS */
-.projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+.projects-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
 .project-card {
   background: var(--bg2); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 1.5rem;
@@ -212,9 +212,14 @@ footer {
 }
 
 /* RESPONSIVE */
+@media (max-width: 900px) {
+  .skills-grid { grid-template-columns: repeat(2, 1fr); }
+}
 @media (max-width: 768px) {
   #hero { flex-direction: column; padding-top: 5rem; }
   .hero-visual { display: none; }
   .about-grid { grid-template-columns: 1fr; }
   .about-stats { flex-direction: row; }
+  .skills-grid { grid-template-columns: 1fr; }
+  .projects-grid { grid-template-columns: 1fr; }
 }
