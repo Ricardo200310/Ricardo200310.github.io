@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人主页 | 工厂数字化 & AI</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <nav>
+    <div class="nav-logo">Ricardo</div>
+    <ul>
+      <li><a href="#about">关于</a></li>
+      <li><a href="#skills">技能</a></li>
+      <li><a href="#projects">项目</a></li>
+      <li><a href="#contact">联系</a></li>
+    </ul>
+  </nav>
+
+  <section id="hero">
+    <div class="hero-content">
+      <div class="tag">工厂数字化 · 工业 AI</div>
+      <h1>田安</h1>
+      <p class="hero-sub">用 AI 技术驱动制造业智能化转型 — MES · 数字孪生 · 工业大模型</p>
+      <div class="hero-btns">
+        <a href="#projects" class="btn-primary">查看项目</a>
+        <a href="#contact" class="btn-outline">联系我</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="grid-anim" id="gridCanvas"></div>
+    </div>
+    <a href="#about" class="scroll-hint" aria-label="向下滑动">
+      <span>向下浏览</span>
+      <div class="scroll-arrow"></div>
+    </a>
+  </section>
+
+  <section id="about">
+    <h2 class="section-title">关于我</h2>
+    <div class="about-grid">
+      <div class="about-text">
+        <p>我是 <strong>田安</strong>，一名专注于工厂数字化与工业 AI 的全栈工程师。热衷于将前沿 AI 技术真正落地到生产一线，而不只是停留在 PPT 里。</p>
+        <p>目前的主要方向是构建以 <strong>大模型（LLM）为核心</strong> 的工业智能应用——从设备数据采集、边缘计算，到 AI Agent 自动决策，再到可视化看板，覆盖制造场景的完整链路。</p>
+        <p>我相信工厂数字化不是为了技术而技术，而是要真正帮助工程师和管理者减少重复劳动、做出更好的决策。</p>
+        <p>主要服务行业：<span class="tag-inline">汽车制造</span><span class="tag-inline">电子制造</span><span class="tag-inline">离散制造</span></p>
+      </div>
+      <div class="about-stats">
+        <div class="stat"><span class="stat-num">LLM</span><span>大模型落地应用</span></div>
+        <div class="stat"><span class="stat-num">IoT</span><span>工业设备互联</span></div>
+        <div class="stat"><span class="stat-num">RAG</span><span>私有化知识库</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="skills">
+    <h2 class="section-title">技能栈</h2>
+    <div class="skills-grid">
+      <div class="skill-card">
+        <div class="skill-icon">🤖</div>
+        <h3>工业 AI</h3>
+        <p>工业大模型（LLM）应用、异常检测</p>
+      </div>
+       <div class="skill-card">
+        <div class="skill-icon">🧠</div>
+        <h3>AI 工作流 & 智能体</h3>
+        <p>LLM 智能体 Agent 开发、AI 工作流编排、RAG 私有化知识库、大模型 API 封装、提示词工程、工业 Agent 落地</p>
+      </div>
+       <div class="skill-card">
+        <div class="skill-icon">💻</div>
+        <h3>全栈开发</h3>
+        <p>Java/SpringBoot、Python、C/C++、Vue3+TS、嵌入式开发、数据库设计、容器 (Docker) 工程化</p>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">🏭</div>
+        <h3>数字化平台</h3>
+        <p>MES、SCADA、数字孪生、WMS、ERP 集成</p>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">🔌</div>
+        <h3>工业协议</h3>
+        <p>OPC-UA、Modbus、MQTT、Profinet 数据采集与边缘计算</p>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">📊</div>
+        <h3>数据与可视化</h3>
+        <p>实时数据看板、BI 报表、时序数据库（InfluxDB / TimescaleDB）</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <h2 class="section-title">项目案例</h2>
+    <div class="projects-grid">
+      <div class="project-card">
+        <div class="project-header">
+          <span class="project-tag">工业 AI</span>
+          <span class="project-year">2025</span>
+        </div>
+        <h3>PCB 缺陷视觉检测系统</h3>
+        <p>基于 YOLOv8 的产线实时缺陷检测，替代人工目检，漏检率从 3% 降至 0.2%。</p>
+        <div class="project-tech">
+          <span>Python</span><span>YOLOv8</span><span>OPC-UA</span>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="project-header">
+          <span class="project-tag">数字孪生</span>
+          <span class="project-year">2025</span>
+        </div>
+        <h3>产线数字孪生监控平台</h3>
+        <p>实时同步产线设备状态，3D 可视化展示，设备故障预警准确率 89%。</p>
+        <div class="project-tech">
+          <span>Three.js</span><span>MQTT</span><span>InfluxDB</span>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="project-header">
+          <span class="project-tag">大模型应用</span>
+          <span class="project-year">2026</span>
+        </div>
+        <h3>工厂设备维修知识助手</h3>
+        <p>基于 RAG 的设备维修问答系统，接入历史维修记录，工程师排障效率提升 40%。</p>
+        <div class="project-tech">
+          <span>LLM</span><span>RAG</span><span>向量数据库</span>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="project-header">
+          <span class="project-tag">智能运维</span>
+          <span class="project-year">2026</span>
+        </div>
+        <h3>智能运维系统</h3>
+        <p>整合工厂所有设备信息，实现设备状态实时监控和智能预警，解放产线人工成本。</p>
+        <div class="project-tech">
+          <span>Vue</span><span>spring boot</span><span>node.js</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <h2 class="section-title">联系我</h2>
+    <div class="contact-links">
+      <a href="mailto:2665488842@qq.com" class="contact-item">
+        <span class="contact-icon">✉</span>
+        <span>2665488842@qq.com</span>
+      </a>
+      <a href="https://github.com/Ricardo200310" target="_blank" class="contact-item">
+        <span class="contact-icon">G</span>
+        <span link="https://github.com/Ricardo200310">GitHub</span>
+      </a>
+      <a href="https://blog.csdn.net/m0_59494725?spm=1000.2115.3001.5343" target="_blank" class="contact-item">
+        <span class="contact-icon">C</span>
+        <span link = "https://blog.csdn.net/m0_59494725?spm=1000.2115.3001.5343">CSDN</span>
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2025 田安 · 版权所有 & 商务微信：13578569548</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
