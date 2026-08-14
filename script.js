@@ -77,3 +77,20 @@ const observer = new IntersectionObserver(entries => {
 }, { threshold: 0.4 });
 
 sections.forEach(s => observer.observe(s));
+
+// Scroll reveal: JS adds the class so content still shows without JS
+const revealTargets = document.querySelectorAll(
+  '.skill-card, .project-card, .timeline-item, .award-card, .about-card, .stat'
+);
+revealTargets.forEach(el => el.classList.add('reveal'));
+
+const revealObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      revealObserver.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.12 });
+
+revealTargets.forEach(el => revealObserver.observe(el));
