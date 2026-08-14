@@ -1,6 +1,6 @@
 /* ============================================================
    田安个人主页 · 交互逻辑
-   滚动联动 / 打字机 / 粒子交互 / 数字滚动 / 聚光灯
+   滚动联动 / 打字机 / 数字孪生核心 / 数字滚动 / 聚光灯
    ============================================================ */
 (() => {
   'use strict';
@@ -86,21 +86,56 @@
     setTimeout(type, 600);
   }
 
-  /* ---------- 粒子网络（鼠标联动） ---------- */
-  const canvas = document.getElementById('gridCanvas');
-  if (canvas) {
+  /* ============================================================
+     数字孪生核心 · 3D 旋转粒子球
+     - 斐波那契球面节点 + 3D 投影连线 + 数据脉冲 + 呼吸光核 + 轨道环
+     - 鼠标拖拽旋转（带惯性）、悬停联动微调
+     ============================================================ */
+  (function () {
+    const canvas = document.getElementById('coreCanvas');
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    let dots = [], W = 0, H = 0, raf = null;
-    const mouse = { x: null, y: null };
+    const finePointer = window.matchMedia('(pointer: fine)').matches;
 
-    function seed() {
-      const count = Math.min(90, Math.max(30, Math.round((W * H) / 14000)));
-      dots = Array.from({ length: count }, () => ({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        vx: (Math.random() - 0.5) * 0.55,
-        vy: (Math.random() - 0.5) * 0.55,
-        r: Math.random() * 1.8 + 1,
+    let W = 0, H = 0;
+    let nodes = [], edges = [], stars = [], pulses = [];
+    let raf = null, running = false;
+    const rot = { x: -0.38, y: 0.7, vx: 0, vy: 0.0016 };
+    let dragging = false, lastPX = 0, lastPY = 0;
+    const hover = { x: 0.5, y: 0.5 };
+
+    const EDGE_TH = 0.74;
+    const BASE_SPIN = 0.0016;
+
+    function build() {
+      // 斐波那契球面均匀分布
+      const N = Math.round(Math.min(140, Math.max(70, (W * H) / 5000)));
+      nodes = [];
+      const GA = Math.PI * (3 - Math.sqrt(5));
+      for (let i = 0; i < N; i++) {
+        const y = 1 - 2 * (i + 0.5) / N;
+        const r = Math.sqrt(Math.max(0, 1 - y * y));
+        const t = i * GA;
+        nodes.push({ x: Math.cos(t) * r, y, z: Math.sin(t) * r });
+      }
+      // 预计算 3D 邻接连线（随球体一起旋转）
+      edges = [];
+      for (let i = 0; i < N; i++) {
+        for (let j = i + 1; j < N; j++) {
+          const a = nodes[i], b = nodes[j];
+          const dx = a.x - b.x, dy = a.y - b.y, dz = a.z - b.z;
+          if (dx * dx + dy * dy + dz * dz < EDGE_TH * EDGE_TH) edges.push([i, j]);
+        }
+      }
+      stars = Array.from({ length: 80 }, () => ({
+        x: Math.random(), y: Math.random(),
+        r: Math.random() * 1.2 + 0.3,
+        ph: Math.random() * Math.PI * 2,
+      }));
+      pulses = Array.from({ length: 7 }, () => ({
+        e: edges.length ? Math.floor(Math.random() * edges.length) : 0,
+        t: Math.random(),
+        sp: 0.005 + Math.random() * 0.01,
       }));
     }
 
@@ -108,84 +143,178 @@
       const rect = canvas.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       W = rect.width; H = rect.height;
+      if (W < 4 || H < 4) { W = 0; H = 0; stop(); return; }
       canvas.width = Math.round(W * dpr);
       canvas.height = Math.round(H * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      seed();
-      if (reduced) draw();
+      build();
+      if (reduced) frame(0); else start();
     }
 
-    function draw() {
+    // 3D 旋转 + 透视投影
+    function project(p, rad) {
+      const cy = Math.cos(rot.y), sy = Math.sin(rot.y);
+      const cx = Math.cos(rot.x), sx = Math.sin(rot.x);
+      const x1 = p.x * cy + p.z * sy;
+      const z1 = -p.x * sy + p.z * cy;
+      const y1 = p.y * cx - z1 * sx;
+      const z2 = p.y * sx + z1 * cx;
+      const s = 3.4 / (3.4 + z2);
+      return { x: x1 * s * rad, y: y1 * s * rad, z: z2, s };
+    }
+
+    function frame(now) {
+      const t = now * 0.001;
       ctx.clearRect(0, 0, W, H);
-      const LINK = Math.min(W, H) * 0.24;
+      const cx0 = W / 2, cy0 = H / 2;
+      const rad = Math.min(W, H) * 0.34;
 
-      for (let i = 0; i < dots.length; i++) {
-        for (let j = i + 1; j < dots.length; j++) {
-          const a = dots[i], b = dots[j];
-          const dx = a.x - b.x, dy = a.y - b.y;
-          const d = Math.sqrt(dx * dx + dy * dy);
-          if (d < LINK) {
-            ctx.strokeStyle = 'rgba(56,189,248,' + ((1 - d / LINK) * 0.42).toFixed(3) + ')';
-            ctx.lineWidth = 0.8;
-            ctx.beginPath();
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(b.x, b.y);
-            ctx.stroke();
-          }
-        }
-        // 与鼠标连线（联动）
-        if (mouse.x !== null) {
-          const dx = a.x - mouse.x, dy = a.y - mouse.y;
-          const d = Math.sqrt(dx * dx + dy * dy);
-          if (d < LINK * 1.5) {
-            ctx.strokeStyle = 'rgba(129,140,248,' + ((1 - d / (LINK * 1.5)) * 0.6).toFixed(3) + ')';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(mouse.x, mouse.y);
-            ctx.stroke();
-          }
-        }
-      }
-
-      for (const p of dots) {
-        ctx.fillStyle = 'rgba(56,189,248,0.65)';
+      // 星空背景
+      ctx.globalCompositeOperation = 'source-over';
+      for (const s of stars) {
+        const a = Math.max(0.05, 0.22 + 0.2 * Math.sin(t * 1.6 + s.ph));
+        ctx.fillStyle = 'rgba(148,163,184,' + a.toFixed(3) + ')';
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
         ctx.fill();
       }
+
+      const pts = nodes.map(n => project(n, rad));
+
+      // 连线与节点（加色混合，制造辉光）
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.lineWidth = 0.7;
+      for (const [i, j] of edges) {
+        const a = pts[i], b = pts[j];
+        const depth = (a.z + b.z) / 2;
+        const alpha = 0.05 + 0.3 * (1 - Math.abs(depth));
+        if (alpha <= 0.05) continue;
+        const col = depth > 0.15 ? '56,189,248' : depth < -0.15 ? '192,132,252' : '129,140,248';
+        ctx.strokeStyle = 'rgba(' + col + ',' + alpha.toFixed(3) + ')';
+        ctx.beginPath();
+        ctx.moveTo(cx0 + a.x, cy0 + a.y);
+        ctx.lineTo(cx0 + b.x, cy0 + b.y);
+        ctx.stroke();
+      }
+
+      // 数据脉冲：沿连线飞行的光点
+      if (edges.length) {
+        for (const p of pulses) {
+          p.t += p.sp;
+          if (p.t >= 1) { p.t = 0; p.e = Math.floor(Math.random() * edges.length); }
+          const [i, j] = edges[p.e];
+          const a = pts[i], b = pts[j];
+          const px = cx0 + a.x + (b.x - a.x) * p.t;
+          const py = cy0 + a.y + (b.y - a.y) * p.t;
+          const grd = ctx.createRadialGradient(px, py, 0, px, py, 7);
+          grd.addColorStop(0, 'rgba(186,230,253,0.95)');
+          grd.addColorStop(0.35, 'rgba(56,189,248,0.5)');
+          grd.addColorStop(1, 'rgba(56,189,248,0)');
+          ctx.fillStyle = grd;
+          ctx.beginPath();
+          ctx.arc(px, py, 7, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // 节点（近处大而亮·青色，远处小而暗·紫色）
+      for (const p of pts) {
+        const depth = p.z;
+        const sz = 0.9 + 1.6 * (1 - Math.abs(depth) * 0.65);
+        const col = depth > 0.15 ? '56,189,248' : depth < -0.15 ? '192,132,252' : '129,140,248';
+        const alpha = 0.35 + 0.55 * (1 - Math.abs(depth));
+        ctx.fillStyle = 'rgba(' + col + ',' + alpha.toFixed(3) + ')';
+        ctx.beginPath();
+        ctx.arc(cx0 + p.x, cy0 + p.y, sz, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 中心呼吸光核
+      const br = rad * (0.16 + 0.02 * Math.sin(t * 1.8));
+      const core = ctx.createRadialGradient(cx0, cy0, 0, cx0, cy0, br * 2.4);
+      core.addColorStop(0, 'rgba(255,255,255,0.95)');
+      core.addColorStop(0.18, 'rgba(125,211,252,0.8)');
+      core.addColorStop(0.5, 'rgba(56,189,248,0.22)');
+      core.addColorStop(1, 'rgba(56,189,248,0)');
+      ctx.fillStyle = core;
+      ctx.beginPath();
+      ctx.arc(cx0, cy0, br * 2.4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 双层轨道环（虚线滚动 = 旋转感）
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 9]);
+      ctx.strokeStyle = 'rgba(56,189,248,0.3)';
+      ctx.lineDashOffset = -t * 22;
+      ctx.beginPath();
+      ctx.ellipse(cx0, cy0, rad * 1.18, rad * 0.42, rot.x * 0.5, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(129,140,248,0.25)';
+      ctx.lineDashOffset = t * 16;
+      ctx.beginPath();
+      ctx.ellipse(cx0, cy0, rad * 0.42, rad * 1.18, rot.x * 0.5, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
     }
 
-    function step() {
-      for (const p of dots) {
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x < 0 || p.x > W) p.vx *= -1;
-        if (p.y < 0 || p.y > H) p.vy *= -1;
+    function step(now) {
+      if (!running) return;
+      if (reduced && !dragging) { stop(); return; }  // 减少动效：仅拖拽时按需重绘
+      if (dragging) {
+        rot.vy *= 0.97; rot.vx *= 0.97;   // 拖拽摩擦力
+      } else {
+        // 惯性回落：自动旋转基准 + 鼠标悬停微调
+        rot.vy += (BASE_SPIN - rot.vy) * 0.04;
+        rot.vx += ((hover.y - 0.5) * 0.005 - rot.vx) * 0.05;
+        if (finePointer) rot.vy += (hover.x - 0.5) * 0.0009;
       }
-      draw();
+      rot.x = Math.max(-1.2, Math.min(1.2, rot.x + rot.vx));
+      rot.y += rot.vy;
+      frame(now);
       raf = requestAnimationFrame(step);
     }
 
-    function start() { if (!raf && !reduced) raf = requestAnimationFrame(step); }
-    function stop() { if (raf) { cancelAnimationFrame(raf); raf = null; } }
+    function start() { if (!running) { running = true; raf = requestAnimationFrame(step); } }
+    function stop() { running = false; if (raf) { cancelAnimationFrame(raf); raf = null; } }
 
-    window.addEventListener('resize', resize);
-    document.addEventListener('visibilitychange', () => {
-      document.hidden ? stop() : start();
+    /* 交互：拖拽旋转 + 悬停联动 */
+    canvas.addEventListener('pointerdown', e => {
+      dragging = true;
+      lastPX = e.clientX; lastPY = e.clientY;
+      canvas.setPointerCapture(e.pointerId);
+      canvas.classList.add('dragging');
+      if (reduced) start();
     });
-
-    const panel = canvas.parentElement;
-    panel.addEventListener('mousemove', e => {
+    canvas.addEventListener('pointermove', e => {
       const r = canvas.getBoundingClientRect();
-      mouse.x = e.clientX - r.left;
-      mouse.y = e.clientY - r.top;
+      if (r.width > 0) {
+        hover.x = (e.clientX - r.left) / r.width;
+        hover.y = (e.clientY - r.top) / r.height;
+      }
+      if (dragging) {
+        rot.vy += (e.clientX - lastPX) * 0.004;
+        rot.vx += (e.clientY - lastPY) * 0.004;
+        lastPX = e.clientX; lastPY = e.clientY;
+      }
     });
-    panel.addEventListener('mouseleave', () => { mouse.x = null; mouse.y = null; });
+    function endDrag(e) {
+      dragging = false;
+      canvas.classList.remove('dragging');
+      if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
+      if (reduced) stop();
+    }
+    canvas.addEventListener('pointerup', endDrag);
+    canvas.addEventListener('pointercancel', endDrag);
+    canvas.addEventListener('mouseleave', () => { hover.x = 0.5; hover.y = 0.5; });
+
+    document.addEventListener('visibilitychange', () => {
+      document.hidden ? stop() : (W > 0 && !reduced && start());
+    });
+    window.addEventListener('resize', resize);
 
     resize();
-    start();
-  }
+  })();
 
   /* ---------- Hero 光球视差 ---------- */
   const hero = document.getElementById('hero');

@@ -255,7 +255,7 @@ body::after {
   box-shadow: 0 10px 26px -12px rgba(56, 189, 248, 0.4);
 }
 
-/* 粒子面板 */
+/* 数字孪生核心面板 */
 .hero-visual {
   flex: 1;
   height: 360px;
@@ -268,7 +268,51 @@ body::after {
   box-shadow: 0 30px 80px -40px rgba(56, 189, 248, 0.35);
   animation: riseIn 0.9s 0.2s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
-#gridCanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+#coreCanvas {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; display: block;
+  cursor: grab; touch-action: none;
+}
+#coreCanvas.dragging { cursor: grabbing; }
+
+/* HUD 科幻面板装饰 */
+.hud { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.hud-corner {
+  position: absolute; width: 26px; height: 26px;
+  border: 2px solid rgba(56, 189, 248, 0.45);
+}
+.hud-corner.tl { top: 14px; left: 14px; border-right: none; border-bottom: none; border-top-left-radius: 8px; }
+.hud-corner.tr { top: 14px; right: 14px; border-left: none; border-bottom: none; border-top-right-radius: 8px; }
+.hud-corner.bl { bottom: 14px; left: 14px; border-right: none; border-top: none; border-bottom-left-radius: 8px; }
+.hud-corner.br { bottom: 14px; right: 14px; border-left: none; border-top: none; border-bottom-right-radius: 8px; }
+.hud-scan {
+  position: absolute; left: 10%; right: 10%; top: 6%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.55), transparent);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+  animation: hudScan 5.5s linear infinite;
+}
+@keyframes hudScan {
+  0%   { top: 6%;  opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { top: 94%; opacity: 0; }
+}
+.hud-tag {
+  position: absolute;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 0.62rem; letter-spacing: 0.14em;
+  color: rgba(143, 163, 191, 0.8);
+  text-transform: uppercase;
+}
+.hud-tl { top: 22px; left: 42px; }
+.hud-br { bottom: 22px; right: 42px; display: flex; align-items: center; gap: 0.45rem; }
+.hud-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 8px #34d399;
+  animation: blink 1.2s steps(1) infinite;
+}
 
 /* 向下滚动提示 */
 .scroll-hint {
