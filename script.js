@@ -404,4 +404,84 @@
       });
     });
   }
+
+  /* ============================================================
+     鼠标交互动画
+     1) 全局光标辉光（两层视差光斑） 2) 磁吸按钮
+     3) 卡片 3D 倾斜             4) 点击涟漪
+     ============================================================ */
+  const finePointer = window.matchMedia('(pointer: fine)').matches;
+
+  /* 1) 光标辉光：两层不同速度的光斑跟随鼠标 */
+  const glow = document.querySelector('.cursor-glow');
+  if (glow && finePointer && !reduced) {
+    const g = { x1: innerWidth * 0.4, y1: innerHeight * 0.4, x2: innerWidth * 0.6, y2: innerHeight * 0.5 };
+    let mx = innerWidth / 2, my = innerHeight / 2;
+    window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; }, { passive: true });
+    (function glowLoop() {
+      g.x1 += (mx - g.x1) * 0.09;
+      g.y1 += (my - g.y1) * 0.09;
+      g.x2 += (mx - g.x2) * 0.045;
+      g.y2 += (my - g.y2) * 0.045;
+      glow.style.setProperty('--g1x', g.x1.toFixed(1) + 'px');
+      glow.style.setProperty('--g1y', g.y1.toFixed(1) + 'px');
+      glow.style.setProperty('--g2x', g.x2.toFixed(1) + 'px');
+      glow.style.setProperty('--g2y', g.y2.toFixed(1) + 'px');
+      requestAnimationFrame(glowLoop);
+    })();
+  }
+
+  /* 2) 磁吸按钮：鼠标靠近时按钮向光标轻微靠拢 */
+  if (finePointer && !reduced) {
+    document.querySelectorAll('.magnetic').forEach(btn => {
+      btn.addEventListener('mousemove', e => {
+        const r = btn.getBoundingClientRect();
+        const dx = e.clientX - (r.left + r.width / 2);
+        const dy = e.clientY - (r.top + r.height / 2);
+        btn.style.transform = 'translate(' + (dx * 0.16).toFixed(1) + 'px,' + (dy * 0.22).toFixed(1) + 'px)';
+      });
+      btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+    });
+  }
+
+  /* 3) 卡片 3D 倾斜：随鼠标位置轻微翻转（带透视） */
+  if (finePointer && !reduced) {
+    document.querySelectorAll('.skill-card, .project-card, .stat, .award-card').forEach(el => {
+      const max = el.classList.contains('featured') ? 2.5
+        : (el.classList.contains('stat') || el.classList.contains('award-card')) ? 3.5 : 5;
+      el.addEventListener('pointerenter', () => {
+        el.style.transition = 'transform 0.12s ease-out, box-shadow 0.3s ease, border-color 0.3s ease';
+      });
+      el.addEventListener('pointermove', e => {
+        const r = el.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        el.style.transform =
+          'perspective(900px) rotateX(' + (-py * max).toFixed(2) + 'deg)' +
+          ' rotateY(' + (px * max).toFixed(2) + 'deg) translateY(-4px)';
+      });
+      el.addEventListener('pointerleave', () => {
+        el.style.transition = '';
+        el.style.transform = '';
+      });
+    });
+  }
+
+  /* 4) 点击涟漪 */
+  if (finePointer && !reduced) {
+    document.querySelectorAll('.btn-primary, .btn-outline, .contact-item, .back-top').forEach(el => {
+      el.addEventListener('pointerdown', e => {
+        const r = el.getBoundingClientRect();
+        const size = Math.max(r.width, r.height) * 2;
+        const span = document.createElement('span');
+        span.className = 'ripple';
+        span.style.width = size + 'px';
+        span.style.height = size + 'px';
+        span.style.left = (e.clientX - r.left - size / 2) + 'px';
+        span.style.top = (e.clientY - r.top - size / 2) + 'px';
+        el.appendChild(span);
+        span.addEventListener('animationend', () => span.remove());
+      });
+    });
+  }
 })();
