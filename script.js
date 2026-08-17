@@ -316,6 +316,177 @@
     resize();
   })();
 
+  /* ============================================================
+     全页背景特效层
+     1) 漂移星尘（滚动视差 + 闪烁） 2) 鼠标扰动（吹散粒子）
+     3) 随机流星             4) 点击迸发（圆环 + 火花）
+     ============================================================ */
+  (function () {
+    const canvas = document.getElementById('bgCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    let W = 0, H = 0, raf = null, running = false;
+    let parts = [], meteors = [], bursts = [];
+    const mouse = { x: -9999, y: -9999 };
+    let scrollOff = 0;
+
+    const COLORS = ['56,189,248', '129,140,248', '192,132,252', '148,163,184'];
+    const REPEL_R = 150;
+
+    function spawnParts() {
+      const count = W < 768 ? 34 : 70;
+      parts = Array.from({ length: count }, () => ({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.22,
+        vy: (Math.random() - 0.5) * 0.22,
+        r: Math.random() * 1.2 + 0.4,
+        c: COLORS[(Math.random() * COLORS.length) | 0],
+        a: 0.12 + Math.random() * 0.3,
+        tw: Math.random() * Math.PI * 2,
+      }));
+    }
+
+    function resize() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = innerWidth; H = innerHeight;
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      spawnParts();
+      if (reduced) frame(performance.now()); else start();
+    }
+
+    function frame(now) {
+      const t = now * 0.001;
+      ctx.clearRect(0, 0, W, H);
+
+      // 星尘粒子：滚动视差 + 闪烁 + 鼠标吹散
+      for (const p of parts) {
+        let px = p.x;
+        let py = (p.y - scrollOff * 0.05 + H * 2) % H;
+        const dx = px - mouse.x, dy = py - mouse.y;
+        const d2 = dx * dx + dy * dy;
+        if (mouse.x > -9000 && d2 < REPEL_R * REPEL_R) {
+          const d = Math.sqrt(d2) || 1;
+          const f = ((REPEL_R - d) / REPEL_R) * 0.7;
+          p.x += (dx / d) * f;
+          p.y += (dy / d) * f;
+          px = p.x;
+          py = (p.y - scrollOff * 0.05 + H * 2) % H;
+        }
+        const a = Math.max(0.05, p.a * (0.7 + 0.3 * Math.sin(t * 1.3 + p.tw)));
+        ctx.fillStyle = 'rgba(' + p.c + ',' + a.toFixed(3) + ')';
+        ctx.beginPath();
+        ctx.arc(px, py, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      // 漂移更新
+      for (const p of parts) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < -12) p.x = W + 12; else if (p.x > W + 12) p.x = -12;
+        if (p.y < -12) p.y = H + 12; else if (p.y > H + 12) p.y = -12;
+      }
+
+      // 流星
+      for (let i = meteors.length - 1; i >= 0; i--) {
+        const m = meteors[i];
+        m.t += 0.016;
+        const k = m.t / m.life;
+        if (k >= 1) { meteors.splice(i, 1); continue; }
+        const hx = m.x + m.vx * m.t;
+        const hy = m.y + m.vy * m.t;
+        const tx = hx - m.vx * 14;
+        const ty = hy - m.vy * 14;
+        const grad = ctx.createLinearGradient(tx, ty, hx, hy);
+        grad.addColorStop(0, 'rgba(56,189,248,0)');
+        grad.addColorStop(1, 'rgba(186,230,253,' + (0.85 * (1 - k)).toFixed(3) + ')');
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(tx, ty);
+        ctx.lineTo(hx, hy);
+        ctx.stroke();
+      }
+
+      // 点击迸发：扩散圆环 + 放射火花
+      for (let i = bursts.length - 1; i >= 0; i--) {
+        const b = bursts[i];
+        b.t += 0.016;
+        const k = b.t / b.life;
+        if (k >= 1) { bursts.splice(i, 1); continue; }
+        const ease = 1 - Math.pow(1 - k, 2);
+        ctx.strokeStyle = 'rgba(56,189,248,' + (0.5 * (1 - k)).toFixed(3) + ')';
+        ctx.lineWidth = 1.4 * (1 - k) + 0.3;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, 5 + ease * 48, 0, Math.PI * 2);
+        ctx.stroke();
+        for (const s of b.sparks) {
+          const sx = b.x + Math.cos(s.ang) * ease * s.dist;
+          const sy = b.y + Math.sin(s.ang) * ease * s.dist;
+          ctx.fillStyle = 'rgba(129,140,248,' + (0.75 * (1 - k)).toFixed(3) + ')';
+          ctx.beginPath();
+          ctx.arc(sx, sy, s.r * (1 - k) + 0.3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+
+    function step(now) {
+      if (!running) return;
+      if (reduced) { stop(); return; }
+      frame(now);
+      raf = requestAnimationFrame(step);
+    }
+
+    function start() { if (!running) { running = true; raf = requestAnimationFrame(step); } }
+    function stop() { running = false; if (raf) { cancelAnimationFrame(raf); raf = null; } }
+
+    // 流星随机生成
+    function spawnMeteor() {
+      if (reduced) return;
+      const fromLeft = Math.random() > 0.5;
+      const x = fromLeft ? Math.random() * W * 0.4 : W - Math.random() * W * 0.4;
+      const y = Math.random() * H * 0.35;
+      const speed = 5 + Math.random() * 4;
+      const ang = fromLeft
+        ? Math.PI / 4 + Math.random() * 0.35
+        : Math.PI * 3 / 4 + Math.random() * 0.35;
+      meteors.push({ x, y, vx: Math.cos(ang) * speed, vy: Math.sin(ang) * speed, t: 0, life: 0.9 + Math.random() * 0.5 });
+      setTimeout(spawnMeteor, 4200 + Math.random() * 4200);
+    }
+    if (!reduced) setTimeout(spawnMeteor, 3200);
+
+    // 鼠标位置（粒子吹散）
+    window.addEventListener('mousemove', e => {
+      mouse.x = e.clientX; mouse.y = e.clientY;
+    }, { passive: true });
+
+    // 点击迸发
+    window.addEventListener('pointerdown', e => {
+      if (reduced) return;
+      const n = 10 + ((Math.random() * 5) | 0);
+      bursts.push({
+        x: e.clientX, y: e.clientY, t: 0, life: 0.8,
+        sparks: Array.from({ length: n }, (_, i) => ({
+          ang: (i / n) * Math.PI * 2 + Math.random() * 0.5,
+          dist: 26 + Math.random() * 34,
+          r: 0.8 + Math.random() * 1.2,
+        })),
+      });
+    });
+
+    window.addEventListener('scroll', () => { scrollOff = window.scrollY; }, { passive: true });
+    document.addEventListener('visibilitychange', () => {
+      document.hidden ? stop() : (!reduced && start());
+    });
+    window.addEventListener('resize', resize);
+
+    resize();
+  })();
+
   /* ---------- Hero 光球视差 ---------- */
   const hero = document.getElementById('hero');
   const orbs = hero ? hero.querySelectorAll('.orb') : [];

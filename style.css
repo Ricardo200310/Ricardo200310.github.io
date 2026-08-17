@@ -63,6 +63,14 @@ a:focus-visible, button:focus-visible {
 }
 @media (pointer: coarse) { .cursor-glow { display: none; } }
 
+/* 全页背景特效画布（星尘/流星/点击迸发） */
+#bgCanvas {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
 /* 背景装饰：细网格 + 光晕 */
 body::before {
   content: '';
